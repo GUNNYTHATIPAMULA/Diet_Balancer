@@ -1,0 +1,21 @@
+# Secrets
+.env
+*.env.local
+hardware/esp32/include/secrets.h
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# Node
+node_modules/
+dist/
+
+# PlatformIO / editors
+.pio/
+.vscode/
+.idea/
+.DS_Store
