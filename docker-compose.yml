@@ -1,0 +1,50 @@
+# Diet Balancer: PostgreSQL + FastAPI + React (nginx).
+# Usage (from the repository root):  cp .env.example .env  &&  docker compose up --build
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-diet}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-diet_balancer}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-diet} -d ${POSTGRES_DB:-diet_balancer}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    # Not published to the host: only the backend talks to the database.
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-diet}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-diet_balancer}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set JWT_SECRET_KEY in .env}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://localhost:8080}
+      # mDNS can't leave the bridge network; dispensers use the address typed on their setup page.
+      MDNS_ENABLED: "false"
+      # Optional: verified food lookup via USDA FoodData Central (free key: https://fdc.nal.usda.gov/api-key-signup)
+      USDA_API_KEY: ${USDA_API_KEY:-}
+    ports:
+      - "8000:8000"   # published on all interfaces so the ESP32 on your LAN can reach it
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: ${PUBLIC_API_BASE_URL:-http://localhost:8000/api/v1}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+
+volumes:
+  pgdata:

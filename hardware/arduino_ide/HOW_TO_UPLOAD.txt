@@ -1,0 +1,39 @@
+DIET BALANCER DISPENSER - QUICK START
+=====================================
+Pins are the same as your test sketch: servos 13/14, HX711 32/33, OLED 21/22.
+Calibration (-191873.0 kg = -191.873 per gram) is built in.
+
+1) EDIT ONE TAB: my_settings.h
+   Open DietBalancerFirmware.ino in Arduino IDE, click the "my_settings.h" tab:
+     #define WIFI_SSID      "ACT101723486083"        <- your Wi-Fi name (2.4 GHz)
+     #define WIFI_PASSWORD  "your-wifi-password"     <- your Wi-Fi password
+     #define SERVER_URL     "http://192.168.0.100:8000/api/v1"   <- laptop IPv4 + port 8000
+     #define DEVICE_NAME    "Kitchen dispenser"      <- name shown on OLED and in the web app
+   (Leave WIFI_SSID "" to use the phone setup hotspot instead.)
+
+2) UPLOAD
+   Board "ESP32 Dev Module", correct COM port, empty scale, Upload (hold BOOT if it
+   shows "Connecting....").
+
+3) START THE BACKEND (laptop, backend folder)
+     uvicorn app.main:app --host 0.0.0.0 --port 8000
+   Your phone must be able to open http://192.168.0.100:8000/health.
+   If it can't, the ESP32 can't either: fix the Windows firewall first.
+
+4) OLED SHOWS THE CODE
+     Kitchen dispenser 1A2B
+          482 913
+     Web app > Connect > enter code
+
+5) WEB APP: Smart Dispenser -> Connect a dispenser -> tap "Kitchen dispenser · 1A2B"
+   -> Connect -> type the code -> "Online and ready".
+
+6) Add containers (servo channel 0 = GPIO 13, 1 = GPIO 14, open/closed angles, food),
+   then dispense. Find the angles with serial "servo 0 0" / "servo 0 70".
+
+Bottom line of the pairing screen:
+  "Web app > Connect > enter code"  -> server reachable, go to step 5
+  "Can't reach server: nettest"     -> type nettest in Serial Monitor (115200)
+
+Serial commands: status, nettest, unpair, weigh, tare, cal <grams>,
+servo <ch> <angle>, close, oled, stop, reset, factory-reset, help

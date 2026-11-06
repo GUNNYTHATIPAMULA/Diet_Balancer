@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body { @apply bg-mist text-ink font-sans antialiased; font-feature-settings: "tnum" 0; }
+  h1, h2, h3 { @apply font-display text-ink; letter-spacing: -0.01em; }
+  :focus-visible { @apply outline-none ring-2 ring-leaf ring-offset-2 ring-offset-mist; }
+  input[type="number"]::-webkit-inner-spin-button { opacity: 0.4; }
+}
+
+@layer components {
+  .num { font-variant-numeric: tabular-nums; }
+  .panel { @apply bg-white rounded-3xl shadow-card border border-line/70; }
+  .field-input {
+    @apply w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-[15px] text-ink placeholder:text-slate-light
+           transition-colors focus:border-leaf focus:outline-none focus:ring-4 focus:ring-sprout/60 disabled:bg-mist disabled:text-slate;
+  }
+  .field-input[aria-invalid="true"] { @apply border-alert focus:ring-alert-light; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+}
